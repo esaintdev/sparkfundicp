@@ -130,9 +130,7 @@ export default function Auth() {
               </Label>
             </div>
 
-            <Button onClick={handleRegistration} className="w-full bg-gradient-primary hover:bg-gradient-primary/90">
-              Complete Registration
-            </Button>
+            
           </CardContent>
         </Card>
       </div>
