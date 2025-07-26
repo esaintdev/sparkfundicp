@@ -20,6 +20,7 @@ export default function Auth() {
     email: '',
     isCreator: false
   });
+  const [waitingForProfile, setWaitingForProfile] = useState(false);
 
   useEffect(() => {
     if (user && profile && !showRegistration) {
@@ -37,16 +38,25 @@ export default function Auth() {
         variant: "destructive"
       });
     } else if (result.isNewUser) {
-      // New user, show registration form
-      setShowRegistration(true);
-      setRegistrationData(prev => ({ 
-        ...prev, 
-        email: `${result.principalId}@icp.local` 
-      }));
-      toast({
-        title: "Wallet Connected",
-        description: "Please complete your profile to continue",
-      });
+      // New user, create profile automatically
+      const { error } = await createProfile(
+        'Anonymous',
+        `${result.principalId}@icp.local`,
+        false
+      );
+      if (error) {
+        toast({
+          title: "Profile Creation Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Wallet Connected & Profile Created!",
+          description: "Welcome to Spark Funds",
+        });
+        navigate('/dashboard');
+      }
     } else {
       // Existing user
       toast({
@@ -57,36 +67,13 @@ export default function Auth() {
     }
   };
 
-  const handleRegistration = async () => {
-    if (!registrationData.name) {
-      toast({
-        title: "Missing Information", 
-        description: "Please enter your name",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const { error } = await createProfile(
-      registrationData.name, 
-      registrationData.email, 
-      registrationData.isCreator
-    );
-    
-    if (error) {
-      toast({
-        title: "Registration Failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Profile Created!",
-        description: "Welcome to Spark Funds",
-      });
+  useEffect(() => {
+    if (waitingForProfile && user && profile && showRegistration) {
+      setWaitingForProfile(false);
+      setShowRegistration(false); // Hide registration form
       navigate('/dashboard');
     }
-  };
+  }, [waitingForProfile, user, profile, showRegistration, navigate]);
 
   if (showRegistration) {
     return (
