@@ -12,7 +12,6 @@ import Dashboard from "./pages/Dashboard";
 import CreateCampaign from "./pages/CreateCampaign";
 import Wallet from "./pages/Wallet";
 import NotFound from "./pages/NotFound";
-import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +30,6 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create-campaign" element={<CreateCampaign />} />
               <Route path="/wallet" element={<Wallet />} />
-              <Route path="/profile" element={<Profile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
