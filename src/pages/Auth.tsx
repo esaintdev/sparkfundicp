@@ -21,6 +21,7 @@ export default function Auth() {
     isCreator: false
   });
   const [waitingForProfile, setWaitingForProfile] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState(false);
 
   useEffect(() => {
     if (user && profile && !showRegistration) {
@@ -38,27 +39,8 @@ export default function Auth() {
         variant: "destructive"
       });
     } else if (result.isNewUser) {
-      // New user, create profile automatically
-      const { error } = await createProfile(
-        'Anonymous',
-        `${result.principalId}@icp.local`,
-        false
-      );
-      if (error) {
-        toast({
-          title: "Profile Creation Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Wallet Connected & Profile Created!",
-          description: "Welcome to Spark Funds",
-        });
-        navigate('/dashboard');
-      }
+      setPendingProfile(true); // Wait for user and wallet to be set
     } else {
-      // Existing user
       toast({
         title: "Welcome back!",
         description: "Wallet connected successfully",
@@ -68,12 +50,38 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (waitingForProfile && user && profile && showRegistration) {
+    if (pendingProfile && user && profile && showRegistration) {
       setWaitingForProfile(false);
       setShowRegistration(false); // Hide registration form
       navigate('/dashboard');
     }
-  }, [waitingForProfile, user, profile, showRegistration, navigate]);
+  }, [pendingProfile, user, profile, showRegistration, navigate]);
+
+  useEffect(() => {
+    if (pendingProfile && user && profile && showRegistration) {
+      (async () => {
+        const { error } = await createProfile(
+          'Anonymous',
+          `${profile.principal_id}@icp.local`,
+          false
+        );
+        if (error) {
+          toast({
+            title: "Profile Creation Failed",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Wallet Connected & Profile Created!",
+            description: "Welcome to Spark Funds",
+          });
+          navigate('/dashboard');
+        }
+        setPendingProfile(false);
+      })();
+    }
+  }, [pendingProfile, user, profile, showRegistration, createProfile, toast, navigate]);
 
   if (showRegistration) {
     return (
